@@ -18,7 +18,7 @@ remote_state {
     hostname = "app.terraform.io"
     organization = "deep-dive-JC"
     workspaces = {
-      name = 
+      name = "EC2-Web-Application-${path_relative_to_include()}"
     }
   }
 }
