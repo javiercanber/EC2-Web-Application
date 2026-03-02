@@ -21,7 +21,8 @@ terraform {
     bucket         = "TF-State-Bucket"
     key            = "${path_relative_to_include()}/terraform.tfstate"
     region         = "eu-west-1"
-    dynamodb_table = "terraform-locks"
+    use_lockfile = "terraform-locks"
+    s3_bucket_query = true
   }
 }
 EOF

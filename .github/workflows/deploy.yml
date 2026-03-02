@@ -38,7 +38,7 @@ jobs:
 
             # Run Terragrunt Validate to check for any syntax errors  
             - name: Terragrunt Validate
-              run: terragrunt run --all validate
+              run: terragrunt run --all validate --non-interactive
 
             # Run Terragrunt Plan to see the changes that will be applied (only for the affected modules)  
             - name: Terragrunt Plan
