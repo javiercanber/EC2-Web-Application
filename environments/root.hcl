@@ -14,7 +14,9 @@ EOF
 
 remote_state {
   backend         = "s3"
-  s3_bucket_query = true
+  skip_bucket_creation = false
+  skip_bucket_versioning = false
+  skip_bucket_ssencryption = false
 
   generate = {
     path      = "backend.tf"
