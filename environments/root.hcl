@@ -15,6 +15,9 @@ EOF
 remote_state {
   backend = "s3"
 
+  disable_init = false
+  skip_bucket_creation = false
+
   generate = {
     path      = "backend.tf"
     if_exists = "overwrite_terragrunt"
@@ -26,9 +29,5 @@ remote_state {
     region         = "eu-west-1"
     encrypt        = true
     dynamodb_table = "terraform-locks"
-
-    skip_bucket_creation = false
-    s3_bucket_tags       = { ManagedBy = "Terragrunt" }
-    dynamodb_table_tags  = { ManagedBy = "Terragrunt" }
   }
 }
