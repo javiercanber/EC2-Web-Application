@@ -13,8 +13,8 @@ EOF
 # Define Terraform backend configuration to use HCP Terraform
 
 remote_state {
-  backend                  = "s3"
-  
+  backend = "s3"
+
   generate = {
     path      = "backend.tf"
     if_exists = "overwrite_terragrunt"
@@ -26,5 +26,9 @@ remote_state {
     region         = "eu-west-1"
     encrypt        = true
     dynamodb_table = "terraform-locks"
+
+    skip_bucket_creation = false
+    s3_bucket_tags       = { ManagedBy = "Terragrunt" }
+    dynamodb_table_tags  = { ManagedBy = "Terragrunt" }
   }
 }
