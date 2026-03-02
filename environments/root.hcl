@@ -13,16 +13,16 @@ EOF
 # Define Terraform backend configuration to use HCP Terraform
 
 generate "backend" {
-  path      = "backend.tf"
-  if_exists = "overwrite"
-  contents  = <<EOF
+  path            = "backend.tf"
+  if_exists       = "overwrite"
+  s3_bucket_query = true
+  contents        = <<EOF
 terraform {
   backend "s3" {
     bucket         = "TF-State-Bucket"
     key            = "${path_relative_to_include()}/terraform.tfstate"
     region         = "eu-west-1"
-    use_lockfile = "terraform-locks"
-    s3_bucket_query = true
+    dynamodb_table = "terraform-locks"
   }
 }
 EOF
