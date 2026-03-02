@@ -32,6 +32,10 @@ jobs:
                 aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
                 aws-region: eu-west-1
 
+            # Run Terragrunt Init to initialize the working directory
+            - name: Terragrunt Init
+              run: terragrunt run --all init --non-interactive    
+
             # Run Terragrunt FMT to fix any formatting issues    
             - name: Terragrunt FMT
               run: terragrunt hcl fmt --check .

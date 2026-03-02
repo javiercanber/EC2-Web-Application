@@ -14,10 +14,7 @@ EOF
 
 remote_state {
   backend                  = "s3"
-  skip_bucket_creation     = false
-  skip_bucket_versioning   = false
-  skip_bucket_ssencryption = false
-
+  
   generate = {
     path      = "backend.tf"
     if_exists = "overwrite_terragrunt"
