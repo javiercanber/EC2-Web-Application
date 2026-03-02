@@ -34,11 +34,11 @@ jobs:
 
             # Run Terragrunt FMT to fix any formatting issues    
             - name: Terragrunt FMT
-              run: terragrunt hcl fmt --check
+              run: terragrunt hcl fmt --check .
 
             # Run Terragrunt Validate to check for any syntax errors  
             - name: Terragrunt Validate
-              run: terragrunt validate
+              run: terragrunt run-all validate
 
             # Run Terragrunt Plan to see the changes that will be applied (only for the affected modules)  
             - name: Terragrunt Plan

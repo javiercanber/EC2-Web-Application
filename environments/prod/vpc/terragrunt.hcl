@@ -1,12 +1,12 @@
 include "root" {
-  path = find_in_parent_folders("terragrunt.hcl")
+  path = find_in_parent_folders("root.hcl")
 }
 
 terraform {
   source = "../../../modules/network"
 }
 
-inputs {
+inputs = {
   name            = "prod-vpc"
   cidr            = "10.2.0.0/16"
   azs             = ["eu-west-1a", "eu-west-1b", "eu-west-1c"]
