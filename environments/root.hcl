@@ -13,9 +13,9 @@ EOF
 # Define Terraform backend configuration to use HCP Terraform
 
 remote_state {
-  backend         = "s3"
-  skip_bucket_creation = false
-  skip_bucket_versioning = false
+  backend                  = "s3"
+  skip_bucket_creation     = false
+  skip_bucket_versioning   = false
   skip_bucket_ssencryption = false
 
   generate = {
