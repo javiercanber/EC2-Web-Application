@@ -1,0 +1,53 @@
+name: "Terragrunt Destroy All"
+
+on:
+  # Ejecución estrictamente manual para evitar desastres
+  workflow_dispatch:
+    inputs:
+      confirm_destroy:
+        description: 'Escribe "DESTROY" para confirmar la operación'
+        required: true
+        default: ''
+
+jobs:
+  terminate-infrastructure:
+    name: "Destroy Full Stack"
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      # 1. Validación de seguridad extra en el log
+      - name: Safety Check
+        run: |
+          if [ "${{ github.event.inputs.confirm_destroy }}" != "DESTROY" ]; then
+            echo "ERROR: Confirmación incorrecta. Abortando destrucción."
+            exit 1
+          fi
+
+      # 2. Instalación de herramientas
+      - name: Setup Terraform
+        uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_version: latest
+
+      - name: Setup Terragrunt
+        uses: gruntwork-io/terragrunt-action@v3
+        with:
+          tg_version: 0.99.4
+
+      # 3. Autenticación en AWS
+      - name: Configure AWS Credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: eu-west-1 
+
+      # 4. Destrucción Masiva
+      - name: Terragrunt Stack Destroy
+        run: |
+          terragrunt run-all destroy --non-interactive --terragrunt-working-dir .
