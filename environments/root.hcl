@@ -12,18 +12,20 @@ EOF
 
 # Define Terraform backend configuration to use HCP Terraform
 
-generate "backend" {
-  path            = "backend.tf"
-  if_exists       = "overwrite"
+remote_state {
+  backend         = "s3"
   s3_bucket_query = true
-  contents        = <<EOF
-terraform {
-  backend "s3" {
+
+  generate = {
+    path      = "backend.tf"
+    if_exists = "overwrite_terragrunt"
+  }
+
+  config = {
     bucket         = "TF-State-Bucket"
     key            = "${path_relative_to_include()}/terraform.tfstate"
     region         = "eu-west-1"
+    encrypt        = true
     dynamodb_table = "terraform-locks"
   }
-}
-EOF
 }
