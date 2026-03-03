@@ -11,6 +11,8 @@ jobs:
         steps:
             - name: Checkout code
               uses: actions/checkout@v4
+              with:
+                fetch-depth: 0
 
             # Install Terraform
             - name: Set up Terraform
@@ -67,7 +69,9 @@ jobs:
 
             # Run Terragrunt Plan to see the changes that will be applied (only for the affected modules)  
             - name: Terragrunt Plan
-              run: terragrunt run --all plan --non-interactive --filter-affected
+              run: |
+                git add .
+                terragrunt run --all plan --non-interactive --filter-affected
             
             # Run Terragrunt Apply to deploy the changes in AWS  
             - name: Terragrunt Apply
