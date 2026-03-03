@@ -35,7 +35,7 @@ jobs:
             # Deploy S3 backend for Terragrunt to store the state files
             - name: Deploy S3 Backend
               run: |
-                BUCKET_NAME="tf-state-bucket"
+                BUCKET_NAME="tf-state-bucket-septa"
                 REGION="eu-west-1"
                 
                 echo "Comprobando si el bucket $BUCKET_NAME existe..."

@@ -21,7 +21,7 @@ remote_state {
   }
 
   config = {
-    bucket         = "tf-state-bucket"
+    bucket         = "tf-state-bucket-septa"
     key            = "${path_relative_to_include()}/terraform.tfstate"
     region         = "eu-west-1"
     encrypt        = true
