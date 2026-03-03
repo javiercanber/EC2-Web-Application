@@ -31,10 +31,31 @@ jobs:
                 aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY }}
                 aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
                 aws-region: eu-west-1
+                
+            # Deploy S3 backend for Terragrunt to store the state files
+            - name: Deploy S3 Backend
+              run: |
+                BUCKET_NAME="my-terragrunt-state-bucket"
+                REGION="eu-west-1"
+                
+                echo "Comprobando si el bucket $BUCKET_NAME existe..."
+                if ! aws s3api head-bucket --bucket "$BUCKET_NAME" 2>/dev/null; then
+                  echo "El bucket no existe. Creándolo en la región $REGION..."
+                  
+                  if [ "$REGION" = "eu-west-1"]; then
+                    aws s3api create-bucket --bucket "$BUCKET_NAME" --region "$REGION"
+                    else
+                    aws s3api create-bucket --bucket "$BUCKET_NAME" --region "$REGION" --create-bucket-configuration LocationConstraint="$REGION"
+                  fi
 
-            # Run Terragrunt Init to initialize the working directory
-            - name: Terragrunt Init
-              run: terragrunt run --all init --non-interactive    
+                  aws s3api put-public-access-block --bucket "$BUCKET_NAME" --public-access-block-configuration "BlockPublicAcls=true,IgnorePublicAcls=true,BlockPublicPolicy=true,RestrictPublicBuckets=true"
+
+                  aws s3api put-bucket-versioning --bucket "$BUCKET_NAME" --versioning-configuration Status=Enabled
+
+                  echo "Bucket $BUCKET_NAME listo para usar."
+                else
+                  echo "El bucket $BUCKET_NAME ya existe. Continuando..."
+                fi
 
             # Run Terragrunt FMT to fix any formatting issues    
             - name: Terragrunt FMT
