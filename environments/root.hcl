@@ -15,10 +15,7 @@ EOF
 remote_state {
   backend = "s3"
 
-  disable_init = false
-  skip_bucket_creation = false
-
-  generate = {
+   generate = {
     path      = "backend.tf"
     if_exists = "overwrite_terragrunt"
   }
@@ -28,6 +25,7 @@ remote_state {
     key            = "${path_relative_to_include()}/terraform.tfstate"
     region         = "eu-west-1"
     encrypt        = true
-    dynamodb_table = "terraform-locks"
+    #dynamodb_table = "terraform-locks"
+    use_lockfile     = true
   }
 }
