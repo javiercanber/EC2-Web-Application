@@ -1,24 +1,78 @@
-name: Terraform Three Tier Architecture Deployment
+name: Terragrunt CI/CD Pipeline
 on:
   push:
-    branches:
-      - main
+    branches: [main]
+  pull_request:
+    branches: [main]
 
 jobs:
-    deploy:
+    build:
         runs-on: ubuntu-latest
         steps:
-        - name: Checkout repository
-            uses: actions/checkout@v2
-    
-        - name: Set up Terraform
-            uses: hashicorp/setup-terraform@v1
-    
-        - name: Initialize Terraform
-            run: terraform init
-    
-        - name: Plan Terraform deployment
-            run: terraform plan
-    
-        - name: Apply Terraform deployment
-            run: terraform apply -auto-approve
+            - name: Checkout code
+              uses: actions/checkout@v4
+              with:
+                fetch-depth: 0
+
+            # Install Terraform
+            - name: Set up Terraform
+              uses: hashicorp/setup-terraform@v3
+              with:
+                terraform_version: 1.12.2
+
+            # Install Terragrunt  
+            - name: Set up Terragrunt
+              uses: autero1/action-terragrunt@v3
+              with:
+                terragrunt-version: 0.99.4
+
+            # Configure AWS credentials    
+            - name: Configure AWS credentials
+              uses: aws-actions/configure-aws-credentials@v2
+              with:
+                aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY }}
+                aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+                aws-region: eu-west-1
+                
+            # Deploy S3 backend for Terragrunt to store the state files
+            - name: Deploy S3 Backend
+              run: |
+                BUCKET_NAME="tf-state-bucket-septa"
+                REGION="eu-west-1"
+                
+                echo "Comprobando si el bucket $BUCKET_NAME existe..."
+                if ! aws s3api head-bucket --bucket "$BUCKET_NAME" 2>/dev/null; then
+                  echo "El bucket no existe. Creándolo en la región $REGION..."
+                  
+                  if [ "$REGION" = "eu-west-1" ]; then
+                    aws s3api create-bucket --bucket "$BUCKET_NAME" --region "$REGION" --create-bucket-configuration LocationConstraint="$REGION"
+                    else
+                    echo "No ha sido posible crear el bucket en la region $REGION."
+                  fi
+
+                  aws s3api put-public-access-block --bucket "$BUCKET_NAME" --public-access-block-configuration "BlockPublicAcls=true,IgnorePublicAcls=true,BlockPublicPolicy=true,RestrictPublicBuckets=true"
+
+                  aws s3api put-bucket-versioning --bucket "$BUCKET_NAME" --versioning-configuration Status=Enabled
+
+                  echo "Bucket $BUCKET_NAME listo para usar."
+                else
+                  echo "El bucket $BUCKET_NAME ya existe. Continuando..."
+                fi
+
+            # Run Terragrunt FMT to fix any formatting issues    
+            - name: Terragrunt FMT
+              run: terragrunt hcl fmt --check .
+
+            # Run Terragrunt Validate to check for any syntax errors  
+            - name: Terragrunt Validate
+              run: terragrunt run --all validate --non-interactive
+
+            # Run Terragrunt Plan to see the changes that will be applied (only for the affected modules)  
+            - name: Terragrunt Plan
+              if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+              run: terragrunt run --all plan --non-interactive --filter-affected
+            
+            # Run Terragrunt Apply to deploy the changes in AWS  
+            - name: Terragrunt Apply
+              if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+              run: terragrunt run --all apply --non-interactive --filter-affected -auto-approve
