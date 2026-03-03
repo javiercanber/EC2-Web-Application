@@ -35,14 +35,14 @@ jobs:
             # Deploy S3 backend for Terragrunt to store the state files
             - name: Deploy S3 Backend
               run: |
-                BUCKET_NAME="my-terragrunt-state-bucket"
+                BUCKET_NAME="TF-State-Bucket"
                 REGION="eu-west-1"
                 
                 echo "Comprobando si el bucket $BUCKET_NAME existe..."
                 if ! aws s3api head-bucket --bucket "$BUCKET_NAME" 2>/dev/null; then
                   echo "El bucket no existe. Creándolo en la región $REGION..."
                   
-                  if [ "$REGION" = "eu-west-1"]; then
+                  if [ "$REGION" = "eu-west-1" ]; then
                     aws s3api create-bucket --bucket "$BUCKET_NAME" --region "$REGION"
                     else
                     aws s3api create-bucket --bucket "$BUCKET_NAME" --region "$REGION" --create-bucket-configuration LocationConstraint="$REGION"
