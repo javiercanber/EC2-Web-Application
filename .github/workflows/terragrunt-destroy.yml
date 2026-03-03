@@ -35,9 +35,9 @@ jobs:
           terraform_version: latest
 
       - name: Setup Terragrunt
-        uses: gruntwork-io/terragrunt-action@v3
+        uses: autero1/action-terragrunt@v3
         with:
-          tg_version: 0.99.4
+          terragrunt-version: 0.99.4
 
       # 3. Autenticación en AWS
       - name: Configure AWS Credentials
