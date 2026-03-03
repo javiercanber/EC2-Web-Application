@@ -77,4 +77,6 @@ jobs:
             # Run Terragrunt Apply to deploy the changes in AWS  
             - name: Terragrunt Apply
               if: github.event_name == 'push' && github.ref == 'refs/heads/main'
-              run: terragrunt run --all apply --non-interactive --filter-affected -auto-approve
+              run: |
+                git add .
+                terragrunt run --all apply --non-interactive --filter-affected
