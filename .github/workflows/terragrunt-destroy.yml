@@ -1,7 +1,7 @@
 name: "Terragrunt Destroy All"
 
 on:
-  # Ejecución estrictamente manual para evitar desastres
+  # Manual execution with confirmation input to prevent accidental runs
   workflow_dispatch:
     inputs:
       confirm_destroy:
@@ -20,7 +20,7 @@ jobs:
         with:
           fetch-depth: 0
 
-      # 1. Validación de seguridad extra en el log
+      # 1. Validation Step to prevent accidental destruction - requires manual confirmation
       - name: Safety Check
         run: |
           if [ "${{ github.event.inputs.confirm_destroy }}" != "DESTROY" ]; then
@@ -28,7 +28,7 @@ jobs:
             exit 1
           fi
 
-      # 2. Instalación de herramientas
+      # 2. Install Terraform and Terragrunt
       - name: Setup Terraform
         uses: hashicorp/setup-terraform@v3
         with:
@@ -39,13 +39,47 @@ jobs:
         with:
           terragrunt-version: 0.99.4
 
-      # 3. Autenticación en AWS
+      # 3. Configure AWS Credentials
       - name: Configure AWS Credentials
         uses: aws-actions/configure-aws-credentials@v4
         with:
           aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY }}
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-          aws-region: eu-west-1 
+          aws-region: eu-west-1
+
+       # Delete S3 bucket contents before destroying infrastructure to ensure no state file issues   
+      - name: Force Delete S3 Backend Bucket
+        if: github.event_name == 'workflow_dispatch'
+        run: |
+          BUCKET_NAME="tf-state-bucket-septa"
+          
+          echo "Initiating cleanup of S3 bucket $BUCKET_NAME..."
+          
+          # 1. Check if the bucket exists before attempting to delete its contents
+          if aws s3api head-bucket --bucket "$BUCKET_NAME" 2>/dev/null; then
+            
+            # 2. Delete all object versions
+            echo "Deleting all object versions..."
+            versions=$(aws s3api list-object-versions --bucket "$BUCKET_NAME" --output json --query '{Objects: Versions[].{Key:Key,VersionId:VersionId}}')
+            if [ "$versions" != '{"Objects": null}' ]; then
+              aws s3api delete-objects --bucket "$BUCKET_NAME" --delete "$versions"
+            fi
+
+            # 3. Deleting all delete markers (if versioning is enabled)
+            echo "Deleting all delete markers..."
+            markers=$(aws s3api list-object-versions --bucket "$BUCKET_NAME" --output json --query '{Objects: DeleteMarkers[].{Key:Key,VersionId:VersionId}}')
+            if [ "$markers" != '{"Objects": null}' ]; then
+              aws s3api delete-objects --bucket "$BUCKET_NAME" --delete "$markers"
+            fi
+
+            # 4. Deleting s3 bucket
+            echo "Deleting S3 bucket $BUCKET_NAME..."
+            aws s3 rb "s3://$BUCKET_NAME" --force
+            
+            echo "Bucket $BUCKET_NAME deleted successfully."
+          else
+            echo "Bucket $BUCKET_NAME does not exist."
+          fi
 
       # 4. Destrucción Masiva
       - name: Terragrunt Stack Destroy
