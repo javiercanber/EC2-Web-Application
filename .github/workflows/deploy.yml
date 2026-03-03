@@ -70,7 +70,9 @@ jobs:
             # Run Terragrunt Plan to see the changes that will be applied (only for the affected modules)  
             - name: Terragrunt Plan
               if: github.event_name == 'push' && github.ref == 'refs/heads/main'
-              run: terragrunt run --all plan --non-interactive --filter-affected
+              run: |
+                git add .
+                terragrunt run --all plan --non-interactive --filter-affected
             
             # Run Terragrunt Apply to deploy the changes in AWS  
             - name: Terragrunt Apply
