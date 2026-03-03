@@ -55,8 +55,8 @@ jobs:
           
           echo "Initiating cleanup of S3 bucket $BUCKET_NAME..."
           
-          # 1. Check if the bucket exists before attempting to delete its contents
-          if aws s3api head-bucket --bucket "$BUCKET_NAME" 2>/dev/null; then
+            # 1. Check if the bucket exists before attempting to delete its contents
+            if aws s3api head-bucket --bucket "$BUCKET_NAME" 2>/dev/null; then
             
             # 2. Delete all object versions
             echo "Deleting all object versions..."
