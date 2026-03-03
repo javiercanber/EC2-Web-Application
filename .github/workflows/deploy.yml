@@ -2,6 +2,8 @@ name: Terragrunt CI/CD Pipeline
 on:
   push:
     branches: [main]
+    paths-ignore:
+      - '.github/workflows/terragrunt-destroy.yml'
   pull_request:
     branches: [main]
 
