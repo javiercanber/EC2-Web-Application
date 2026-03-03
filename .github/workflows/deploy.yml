@@ -5,6 +5,8 @@ on:
     paths-ignore:
       - '.github/workflows/terragrunt-destroy.yml'
   pull_request:
+    paths-ignore:
+      - '.github/workflows/terragrunt-destroy.yml'
     branches: [main]
 
 jobs:
