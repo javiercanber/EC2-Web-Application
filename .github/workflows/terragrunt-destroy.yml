@@ -50,4 +50,4 @@ jobs:
       # 4. Destrucción Masiva
       - name: Terragrunt Stack Destroy
         run: |
-          terragrunt run-all destroy --non-interactive
+          terragrunt run --all destroy --non-interactive
